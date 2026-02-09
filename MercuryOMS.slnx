@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="Mercury OMS.API/MercuryOMS.API.csproj" />
+    <Project Path="MercuryOMS.Application/MercuryOMS.Application.csproj" />
+    <Project Path="MercuryOMS.Domain/MercuryOMS.Domain.csproj" />
+    <Project Path="MercuryOMS.Infrastructure/MercuryOMS.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>

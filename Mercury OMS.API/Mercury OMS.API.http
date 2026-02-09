@@ -1,0 +1,6 @@
+@Mercury_OMS.API_HostAddress = http://localhost:5275
+
+GET {{Mercury_OMS.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
