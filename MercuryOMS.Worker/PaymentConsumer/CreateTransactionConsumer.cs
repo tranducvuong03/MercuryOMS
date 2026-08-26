@@ -5,18 +5,18 @@ using MercuryOMS.Domain.Enums;
 
 namespace MercuryOMS.Worker.PaymentConsumer
 {
-    public class CreateTransactionHandler : IPaymentPaidHandler
+    public class CreateTransactionConsumer : RabbitMqConsumerBase<PaymentPaidMessage>
     {
-        private readonly IUnitOfWork _uow;
-
-        public CreateTransactionHandler(IUnitOfWork uow)
+        public CreateTransactionConsumer(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
         {
-            _uow = uow;
         }
 
-        public async Task HandleAsync(PaymentPaidMessage message)
+        protected override string QueueName => QueueNames.PaymentPaid;
+
+        protected override async Task HandleMessageAsync(IServiceScope serviceScope, PaymentPaidMessage message, CancellationToken cancellationToken)
         {
-            var repo = _uow.GetRepository<Transaction>();
+            var uow = serviceScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var repo = uow.GetRepository<Transaction>();
 
             var existed = repo.Query.Any(x => x.PaymentId == message.PaymentId);
             if (existed)
@@ -31,7 +31,7 @@ namespace MercuryOMS.Worker.PaymentConsumer
 
             await repo.AddAsync(transaction);
 
-            await _uow.SaveChangesAsync();
+            await uow.SaveChangesAsync();
         }
     }
 }

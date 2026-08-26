@@ -25,6 +25,16 @@ public class CartController : ControllerBase
             : BadRequest(result);
     }
 
+    [HttpGet("count")]
+    public async Task<IActionResult> GetCartItemCount(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetCartItemCountQuery(), ct);
+
+        return result.IsSuccess
+            ? Ok(result)
+            : BadRequest(result);
+    }
+
     [HttpPost("items")]
     public async Task<IActionResult> AddToCart([FromBody] AddToCartCommand command)
     {

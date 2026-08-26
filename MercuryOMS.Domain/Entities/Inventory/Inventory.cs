@@ -32,7 +32,6 @@ namespace MercuryOMS.Domain.Entities
             Available = initialQuantity;
             Reserved = 0;
 
-            AddLog(InventoryLogType.StockIn, initialQuantity);
             EnsureValidState();
         }
 
@@ -48,7 +47,7 @@ namespace MercuryOMS.Domain.Entities
             Reserved += quantity;
 
             EnsureValidState();
-            AddLog(InventoryLogType.Reserve, quantity, referenceId);
+            //AddLog(InventoryLogType.Reserve, quantity, referenceId);
         }
 
         public void Commit(int quantity, Guid? referenceId = null)

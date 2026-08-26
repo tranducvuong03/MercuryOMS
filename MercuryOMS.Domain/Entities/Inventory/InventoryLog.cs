@@ -8,6 +8,8 @@ namespace MercuryOMS.Domain.Entities
     {
         public Guid InventoryId { get; private set; }
 
+        public Inventory Inventory { get; private set; } = null!;
+
         public InventoryLogType Type { get; private set; }
         public int Quantity { get; private set; }
 

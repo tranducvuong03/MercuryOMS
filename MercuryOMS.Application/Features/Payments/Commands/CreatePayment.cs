@@ -4,17 +4,22 @@ using MercuryOMS.Application.UOW;
 using MercuryOMS.Application.IServices;
 using MercuryOMS.Domain.Entities;
 using MercuryOMS.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace MercuryOMS.Application.Features
 {
     public record CreatePaymentCommand(
         Guid OrderId,
-        decimal Amount,
         PaymentMethod Method
-    ) : IRequest<Result<Guid>>;
+    ) : IRequest<Result<CreatePaymentResponse>>;
+
+    public record CreatePaymentResponse(
+        Guid PaymentId,
+        string? PaymentUrl
+    );
 
     public class CreatePaymentHandler
-        : IRequestHandler<CreatePaymentCommand, Result<Guid>>
+        : IRequestHandler<CreatePaymentCommand, Result<CreatePaymentResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPaymentFactory _factory;
@@ -27,24 +32,28 @@ namespace MercuryOMS.Application.Features
             _factory = factory;
         }
 
-        public async Task<Result<Guid>> Handle(
+        public async Task<Result<CreatePaymentResponse>> Handle(
             CreatePaymentCommand request,
             CancellationToken ct)
         {
             var strategy = _factory.Get(request.Method.ToString());
 
-            var payment = await strategy.CreatePaymentAsync(
+            var order = await _unitOfWork.GetRepository<Order>().GetByIdAsync(request.OrderId, o => o.Include(oi => oi.Items));
+
+            var paymentResult = await strategy.CreatePaymentAsync(
                 request.OrderId,
-                request.Amount,
+                order!.TotalAmount,
                 ct
             );
 
             await _unitOfWork.GetRepository<Payment>()
-                .AddAsync(payment, ct);
+                .AddAsync(paymentResult.Payment, ct);
 
             await _unitOfWork.SaveChangesAsync(ct);
 
-            return Result<Guid>.Success(payment.Id, "Tạo thanh toán thành công");
+            return Result<CreatePaymentResponse>.Success(
+                        new CreatePaymentResponse(paymentResult.Payment.Id, paymentResult.PaymentUrl),
+                        "Tạo thanh toán thành công");
         }
     }
 }

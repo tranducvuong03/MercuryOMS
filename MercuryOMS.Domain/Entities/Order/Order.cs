@@ -23,7 +23,7 @@ namespace MercuryOMS.Domain.Entities
         {
             if (address == null)
                 throw new DomainException("Địa chỉ không hợp lệ.");
-
+            Id = Guid.NewGuid();
             UserId = userId;
             OrderDate = DateTime.UtcNow;
             Status = OrderStatus.Pending;

@@ -4,22 +4,23 @@ using MercuryOMS.Domain.Constants;
 
 namespace MercuryOMS.Worker.PaymentConsumer
 {
-    public class SendEmailHandler : IPaymentPaidHandler
+    public class SendEmailConsumer : RabbitMqConsumerBase<PaymentPaidMessage>
     {
-        private readonly INotificationService _notificationService;
         private readonly IConfiguration _config;
 
-        public SendEmailHandler(
-            INotificationService notificationService,
-            IConfiguration config)
+        public SendEmailConsumer(IServiceScopeFactory serviceScopeFactory, 
+                                IConfiguration config) : base(serviceScopeFactory)
         {
-            _notificationService = notificationService;
             _config = config;
         }
 
-        public async Task HandleAsync(PaymentPaidMessage message)
+        protected override string QueueName => QueueNames.PaymentPaid;
+
+        protected override async Task HandleMessageAsync(IServiceScope serviceScope, PaymentPaidMessage message, CancellationToken cancellationToken)
         {
-            await _notificationService.SendEmailAsync(
+            var notificationService = serviceScope.ServiceProvider.GetRequiredService<INotificationService>();
+
+            await notificationService.SendEmailAsync(
                 message.Email,
                 "[PAYMENT SUCCESSFUL] - MercuryOMS",
                 EmailTemplates.PaymentSuccess(

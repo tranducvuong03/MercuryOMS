@@ -26,6 +26,11 @@
         public const string InventoryStockIn = "Nhập kho thành công.";
         public const string InventoryAdjusted = "Điều chỉnh kho thành công.";
 
+        // Address
+        public const string CreateSuccessfully = "Tạo thành công";
+        public const string UpdateSuccessfully = "Cập nhật thành công";
+        public const string DeleteSuccessfully = "Xóa thành công";
+
         // Auth
         public const string LoginSuccess = "Đăng nhập thành công.";
         public const string RegisterSuccess = "Đăng ký thành công. Vui lòng xác nhận trong email.";

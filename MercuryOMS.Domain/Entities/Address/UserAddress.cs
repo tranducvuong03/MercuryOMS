@@ -27,9 +27,10 @@ namespace MercuryOMS.Domain.Entities
         public void SetDefault() => IsDefault = true;
         public void RemoveDefault() => IsDefault = false;
 
-        public void Update(string label, Address address)
+        public void Update(string label, bool isDefault, Address address)
         {
             Label = label;
+            IsDefault = isDefault;
             Address = address;
         }
     }

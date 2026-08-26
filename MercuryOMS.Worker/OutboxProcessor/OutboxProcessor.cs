@@ -37,6 +37,8 @@ namespace MercuryOMS.Worker.OutboxProcessor
 
                         msg.MarkAsProcessed();
                         msg.ProcessedOn = DateTime.UtcNow;
+
+                        db.SaveChanges();
                     }
                     catch (Exception ex)
                     {

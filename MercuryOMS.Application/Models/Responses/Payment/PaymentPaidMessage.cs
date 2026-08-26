@@ -1,5 +1,8 @@
 ﻿namespace MercuryOMS.Application.Models.Responses
 {
+    /// <summary>
+    /// Class trả về thông tin thanh toán thành công ở worker
+    /// </summary>
     public class PaymentPaidMessage
     {
         public Guid PaymentId { get; set; }

@@ -1,4 +1,5 @@
-﻿using MercuryOMS.Domain.Entities;
+﻿using MercuryOMS.Application.Features;
+using MercuryOMS.Application.Models.Responses;
 
 namespace MercuryOMS.Application.IServices
 {
@@ -6,7 +7,7 @@ namespace MercuryOMS.Application.IServices
     {
         string Method { get; }
 
-        Task<Payment> CreatePaymentAsync(
+        Task<PaymentResult> CreatePaymentAsync(
             Guid orderId,
             decimal amount,
             CancellationToken ct);

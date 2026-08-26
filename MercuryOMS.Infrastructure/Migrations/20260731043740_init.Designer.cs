@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MercuryOMS.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260501141729_db")]
-    partial class db
+    [Migration("20260731043740_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -154,7 +154,7 @@ namespace MercuryOMS.Infrastructure.Migrations
                     b.Property<Guid>("InventoryId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("InventoryId1")
+                    b.Property<Guid>("InventoryId1")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
@@ -259,6 +259,8 @@ namespace MercuryOMS.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("ProductVariantId");
 
@@ -969,14 +971,18 @@ namespace MercuryOMS.Infrastructure.Migrations
             modelBuilder.Entity("MercuryOMS.Domain.Entities.InventoryLog", b =>
                 {
                     b.HasOne("MercuryOMS.Domain.Entities.Inventory", null)
-                        .WithMany()
+                        .WithMany("Logs")
                         .HasForeignKey("InventoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MercuryOMS.Domain.Entities.Inventory", null)
-                        .WithMany("Logs")
-                        .HasForeignKey("InventoryId1");
+                    b.HasOne("MercuryOMS.Domain.Entities.Inventory", "Inventory")
+                        .WithMany()
+                        .HasForeignKey("InventoryId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
                 });
 
             modelBuilder.Entity("MercuryOMS.Domain.Entities.Order", b =>
@@ -1000,11 +1006,29 @@ namespace MercuryOMS.Infrastructure.Migrations
 
             modelBuilder.Entity("MercuryOMS.Domain.Entities.OrderItem", b =>
                 {
-                    b.HasOne("MercuryOMS.Domain.Entities.Order", null)
+                    b.HasOne("MercuryOMS.Domain.Entities.Order", "Order")
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MercuryOMS.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MercuryOMS.Domain.Entities.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("MercuryOMS.Domain.Entities.Payment", b =>

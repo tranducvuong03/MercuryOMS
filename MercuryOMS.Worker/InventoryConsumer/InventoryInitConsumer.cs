@@ -8,12 +8,11 @@ namespace MercuryOMS.Worker
     public class InventoryInitConsumer
     : RabbitMqConsumerBase<InventoryInitMessage>
     {
-        protected override string QueueName => "inventory.created";
-
-        public InventoryInitConsumer(IServiceScopeFactory scopeFactory)
-            : base(scopeFactory)
+        public InventoryInitConsumer(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
         {
         }
+
+        protected override string QueueName => QueueNames.InventoryInit;
 
         protected override async Task HandleMessageAsync(
             IServiceScope scope,
@@ -22,7 +21,6 @@ namespace MercuryOMS.Worker
         {
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var repo = uow.GetRepository<Inventory>();
-
             var exists = await repo.Query
                 .AnyAsync(x => x.VariantId == message.VariantId, ct);
 

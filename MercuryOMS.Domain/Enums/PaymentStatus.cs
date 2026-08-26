@@ -6,6 +6,6 @@
         Paid,        // đã thanh toán thành công
         Failed,      // thanh toán thất bại
         Refunded,    // đã hoàn tiền
-        Cancelled    // bị hủy (timeout / user hủy)
+        Cancelled    // bị hủy / timeout
     }
 }

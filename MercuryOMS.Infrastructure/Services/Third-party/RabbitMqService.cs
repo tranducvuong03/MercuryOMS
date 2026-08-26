@@ -3,10 +3,12 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
-public class RabbitMqService : IMessageBus, IDisposable
+namespace MercuryOMS.Infrastructure.Services;
+
+public sealed class RabbitMqService : IMessageBus, IAsyncDisposable
 {
     private readonly IConnection _connection;
-    private readonly IModel _channel;
+    private readonly IChannel _channel;
 
     public RabbitMqService()
     {
@@ -15,36 +17,30 @@ public class RabbitMqService : IMessageBus, IDisposable
             HostName = "localhost"
         };
 
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
+        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
     }
 
-    public Task PublishAsync<T>(string routingKey, T message)
+    public async Task PublishAsync<T>(string routingKey, T message)
     {
-        byte[] body;
-
-        if (message is string str)
+        ReadOnlyMemory<byte> body = message switch
         {
-            body = Encoding.UTF8.GetBytes(str);
-        }
-        else
-        {
-            body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
-        }
+            string str => Encoding.UTF8.GetBytes(str),
+            _ => Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message))
+        };
 
-        _channel.BasicPublish(
-            exchange: "",
+        await _channel.BasicPublishAsync(
+            exchange: string.Empty,
             routingKey: routingKey,
-            basicProperties: null,
-            body: body
-        );
-
-        return Task.CompletedTask;
+            body: body);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _channel?.Close();
-        _connection?.Close();
+        await _channel.CloseAsync();
+        await _connection.CloseAsync();
+
+        await _channel.DisposeAsync();
+        await _connection.DisposeAsync();
     }
 }

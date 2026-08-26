@@ -137,14 +137,13 @@ namespace MercuryOMS.Infrastructure.Data
                 entity.Property(i => i.VariantId)
                       .IsRequired();
 
-                entity.HasMany<InventoryLog>()
+                entity.HasMany(i => i.Logs)
                       .WithOne()
                       .HasForeignKey(il => il.InventoryId)
                       .OnDelete(DeleteBehavior.Cascade);
-
                 entity.HasIndex(i => i.VariantId)
                       .IsUnique();
-            });
+                            });
 
             builder.Entity<InventoryLog>(entity =>
             {
@@ -161,12 +160,13 @@ namespace MercuryOMS.Infrastructure.Data
             {
                 entity.HasKey(o => o.Id);
 
-                entity.Property(o => o.UserId).IsRequired();
+                entity.Property(o => o.UserId)
+                    .IsRequired();
 
                 entity.HasMany(o => o.Items)
-                      .WithOne()
-                      .HasForeignKey(oi => oi.OrderId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                    .WithOne(i => i.Order)
+                    .HasForeignKey(i => i.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.OwnsOne(o => o.ShippingAddress);
             });
@@ -175,14 +175,34 @@ namespace MercuryOMS.Infrastructure.Data
             {
                 entity.HasKey(oi => oi.Id);
 
-                entity.Property(oi => oi.OrderId).IsRequired();
-                entity.Property(oi => oi.ProductVariantId).IsRequired();
-                entity.Property(oi => oi.Quantity).IsRequired();
+                entity.Property(oi => oi.OrderId)
+                    .IsRequired();
+
+                entity.Property(oi => oi.ProductId)
+                    .IsRequired();
+
+                entity.Property(oi => oi.ProductVariantId)
+                    .IsRequired();
+
+                entity.Property(oi => oi.Quantity)
+                    .IsRequired();
+
                 entity.Property(oi => oi.UnitPrice)
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
 
+                entity.HasOne(oi => oi.Product)
+                    .WithMany()
+                    .HasForeignKey(oi => oi.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(oi => oi.ProductVariant)
+                    .WithMany()
+                    .HasForeignKey(oi => oi.ProductVariantId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasIndex(oi => oi.OrderId);
+                entity.HasIndex(oi => oi.ProductId);
                 entity.HasIndex(oi => oi.ProductVariantId);
 
                 entity.HasIndex(oi => new { oi.OrderId, oi.ProductVariantId })

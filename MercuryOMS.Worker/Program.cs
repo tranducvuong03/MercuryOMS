@@ -1,6 +1,7 @@
 using MercuryOMS.Infrastructure.Data;
 using MercuryOMS.Worker;
 using MercuryOMS.Worker.OutboxProcessor;
+using MercuryOMS.Worker.PaymentConsumer;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -13,7 +14,10 @@ builder.Configuration
 
 // Hosted Services
 builder.Services.AddHostedService<InventoryInitConsumer>();
-builder.Services.AddHostedService<PaymentPaidConsumer>();
+builder.Services.AddHostedService<CreateTransactionConsumer>();
+builder.Services.AddHostedService<DeductInventoryConsumer>();
+builder.Services.AddHostedService<SendEmailConsumer>();
+builder.Services.AddHostedService<UpdateOrderConsumer>();
 builder.Services.AddHostedService<OutboxProcessor>();
 
 // Services

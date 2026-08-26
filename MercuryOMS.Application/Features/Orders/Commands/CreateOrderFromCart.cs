@@ -3,12 +3,11 @@ using MercuryOMS.Application.Commons;
 using MercuryOMS.Application.UOW;
 using MercuryOMS.Domain.Constants;
 using MercuryOMS.Domain.Entities;
-using MercuryOMS.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace MercuryOMS.Application.Features
 {
-    public record CreateOrderFromCartCommand() : IRequest<Result<Guid>>;
+    public record CreateOrderFromCartCommand : IRequest<Result<Guid>>;
 
     public class CreateOrderFromCartHandler
         : IRequestHandler<CreateOrderFromCartCommand, Result<Guid>>
@@ -42,6 +41,7 @@ namespace MercuryOMS.Application.Features
 
             // lấy địa chỉ mặc định của user
             var address = await _uow.GetRepository<UserAddress>().Query
+                .AsNoTracking()
                 .Where(x => x.UserId == userId && x.IsDefault)
                 .Select(x => x.Address)
                 .FirstOrDefaultAsync(ct);
@@ -65,11 +65,9 @@ namespace MercuryOMS.Application.Features
 
             var order = new Order(userId.Value, address);
 
+            // so số lượng trong giỏ và variant trong hệ thống
             foreach (var item in cart.Items)
             {
-                if (!variants.ContainsKey(item.VariantId))
-                    return Result<Guid>.Failure("Phân loại không tồn tại.");
-
                 if (!inventories.ContainsKey(item.VariantId))
                     return Result<Guid>.Failure("Không tìm thấy tồn kho.");
 
@@ -77,6 +75,7 @@ namespace MercuryOMS.Application.Features
                     return Result<Guid>.Failure("Số lượng vượt quá tồn kho.");
             }
 
+            // tạo order
             foreach (var item in cart.Items)
             {
                 var variant = variants[item.VariantId];
@@ -91,6 +90,7 @@ namespace MercuryOMS.Application.Features
                     price
                 );
 
+                // thay chạy background hợp lý hơn
                 inventory.Reserve(item.Quantity, order.Id);
             }
 

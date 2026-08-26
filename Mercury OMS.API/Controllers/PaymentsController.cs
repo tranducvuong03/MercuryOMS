@@ -15,9 +15,24 @@ namespace MercuryOMS.API.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet("order/{orderId:guid}")]
+        public async Task<IActionResult> GetByOrderId(
+            Guid orderId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetPaymentByOrderIdQuery(orderId),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreatePayment(
-            [FromBody] CreatePaymentCommand command,
+            [FromQuery] CreatePaymentCommand command,
             CancellationToken ct)
         {
             var result = await _mediator.Send(command, ct);
@@ -26,6 +41,32 @@ namespace MercuryOMS.API.Controllers
                 return BadRequest(result);
 
             return Ok(result);
+        }
+
+        [HttpGet("ipn")]
+        public async Task<IActionResult> Ipn(CancellationToken ct)
+        {
+            var command = new VnPayIpnCommand
+            {
+                Parameters = Request.Query.ToDictionary(
+                    x => x.Key,
+                    x => x.Value.ToString())
+            };
+
+            var result = await _mediator.Send(command, ct);
+
+            if (!result.IsSuccess)
+                return BadRequest(new
+                {
+                    RspCode = result.Message,
+                    Message = result.Message
+                });
+
+            return Ok(new
+            {
+                RspCode = "00",
+                Message = "Confirm Success"
+            });
         }
     }
 }
